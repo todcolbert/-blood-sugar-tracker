@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Blood Sugar Tracker</title>
+
+<style>
+body { font-family: Arial; margin: 10px; }
+.day { border: 1px solid #ccc; padding: 10px; margin-bottom: 15px; border-radius: 8px; }
+h2 { margin-top: 0; }
+button { padding: 6px 10px; margin: 5px 0; }
+.entry { margin-top: 10px; padding: 8px; background: #f5f5f5; border-radius: 6px; }
+input, select { margin: 5px; padding: 5px; }
+</style>
+
+</head>
+<body>
+
+<h1>Blood Sugar Tracker (Week)</h1>
+
+<div id="days"></div>
+
+<script>
+const days = ["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"];
+
+function insulinFromChart(bg, type) {
+    if (bg < 70) return "LOW - treat";
+
+    let mealUnits = 0;
+    let nightUnits = 0;
+
+    if (bg <= 90) { mealUnits = 2; nightUnits = 0; }
+    else if (bg <= 130) { mealUnits = 4; nightUnits = 0; }
+    else if (bg <= 150) { mealUnits = 6; nightUnits = 0; }
+    else if (bg <= 200) { mealUnits = 8; nightUnits = 0; }
+    else if (bg <= 250) { mealUnits = 10; nightUnits = 0; }
+    else if (bg <= 300) { mealUnits = 12; nightUnits = 1; }
+    else if (bg <= 350) { mealUnits = 14; nightUnits = 2; }
+    else if (bg <= 400) { mealUnits = 16; nightUnits = 3; }
+    else if (bg <= 450) { mealUnits = 18; nightUnits = 4; }
+    else { mealUnits = 20; nightUnits = 5; }
+
+    return (type === "Bedtime") ? nightUnits : mealUnits;
+}
+
+function addEntry(dayDiv) {
+    const entry = document.createElement("div");
+    entry.className = "entry";
+
+    entry.innerHTML = `
+        <select class="time">
+            <option>Breakfast</option>
+            <option>Lunch</option>
+            <option>Supper</option>
+            <option>Bedtime</option>
+        </select>
+
+        BG: <input type="number" class="bg" placeholder="mg/dL">
+
+        Insulin: <input type="text" class="insulin">
+
+        <button onclick="this.parentElement.remove()">❌</button>
+    `;
+
+    dayDiv.appendChild(entry);
+
+    const bgInput = entry.querySelector(".bg");
+    const insulinInput = entry.querySelector(".insulin");
+    const timeSelect = entry.querySelector(".time");
+
+    function updateInsulin() {
+        const bg = parseFloat(bgInput.value);
+        const type = timeSelect.value;
+
+        if (!isNaN(bg)) {
+            insulinInput.value = insulinFromChart(bg, type);
+        }
+    }
+
+    bgInput.addEventListener("input", updateInsulin);
+    timeSelect.addEventListener("change", updateInsulin);
+}
+
+// build UI
+const container = document.getElementById("days");
+
+days.forEach(day => {
+    const div = document.createElement("div");
+    div.className = "day";
+
+    div.innerHTML = `
+        <h2>${day}</h2>
+        <button onclick="addEntry(this.parentElement)">➕ Add Entry</button>
+    `;
+
+    container.appendChild(div);
+});
+</script>
+
+</body>
+</html>
